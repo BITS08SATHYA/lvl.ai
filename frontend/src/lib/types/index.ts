@@ -1,8 +1,8 @@
 // Simplified Task Models Index - Centralized exports
 
 // Task Types
-export { TaskPriority, TaskStatus } from './Task';
-export type { 
+export { TaskPriority, TaskStatus, TaskType } from './Task';
+export type {
   ITask,
   Task,
   CreateTaskDTO,
@@ -22,8 +22,8 @@ export { parseTaskDates, isOverdue, isUpcoming } from './Task';
 export * from './Common';
 
 // User Models
-export type { 
-  IUser, 
+export type {
+  IUser,
   User,
   UserPreferences,
   FriendRequests,
@@ -32,7 +32,9 @@ export type {
   UpdateUserDTO,
   UpdatePasswordDTO,
   UserResponse,
-  AuthResponse
+  AuthResponse,
+  Metric,
+  LevelProgress
 } from './User';
 
 // User Helper Functions

@@ -1,6 +1,6 @@
 // API Response Types
 import { User } from './User';
-import { TaskType, TaskPriority, TaskStatus } from './BaseTask';
+import { TaskType, TaskPriority, TaskStatus } from './Task';
 import { LifeCategory, UserPreferences } from './User';
 
 export interface ApiResponse<T = unknown> {

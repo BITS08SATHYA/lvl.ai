@@ -20,6 +20,7 @@ type AccessTokenPayload = JwtPayload & { userId: string; type: 'access' };
 
 type LiteUser = {
   _id: string;
+  id?: string;
   name?: string;
   email?: string;
   isEmailVerified: boolean;
@@ -99,6 +100,7 @@ async function verifyAndLoadUser(
 
   return {
     _id: String((dbUser as any)._id),
+    id: String((dbUser as any)._id),
     name: (dbUser as any).name,
     email: (dbUser as any).email,
     isEmailVerified: (dbUser as any).isEmailVerified,

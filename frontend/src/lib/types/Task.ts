@@ -15,6 +15,19 @@ export enum TaskStatus {
   CANCELLED = 'cancelled',
 }
 
+export enum TaskType {
+  FOOD = 'food',
+  HOMEWORK = 'homework',
+  EMAIL = 'email',
+  MEETING = 'meeting',
+  PROJECT = 'project',
+  PERSONAL = 'personal',
+  WORK = 'work',
+  HEALTH = 'health',
+  SOCIAL = 'social',
+  OTHER = 'other',
+}
+
 // ---------- BACKEND TASK INTERFACE ----------
 // This matches the backend ITask interface exactly
 export interface ITask {
@@ -27,6 +40,8 @@ export interface ITask {
   dueDate?: Date | string; // When the task is due
   completedAt?: Date | string;
   points: number;
+  xpValue: number;
+  taskType: TaskType;
   tags: string[];
   userId: string; // User who owns the task
   createdAt: Date | string; // Time of conception
@@ -45,6 +60,8 @@ export interface Task {
   dueDate?: Date; // When the task is due
   completedAt?: Date;
   points: number;
+  xpValue: number;
+  taskType: TaskType;
   tags: string[];
   userId: string;
   createdAt: Date; // Time of conception
@@ -76,9 +93,11 @@ export interface UpdateTaskDTO {
 
 // ---------- TASK FILTERS ----------
 export interface TaskFilters {
-  status?: TaskStatus;
-  priority?: TaskPriority;
-  tag?: string;
+  status?: TaskStatus | TaskStatus[];
+  priority?: TaskPriority | TaskPriority[];
+  tag?: string; // Legacy support
+  tags?: string[];
+  taskType?: string[];
   page?: number;
   limit?: number;
   sortBy?: 'createdAt' | 'updatedAt' | 'dueDate' | 'taskTime' | 'priority' | 'points';

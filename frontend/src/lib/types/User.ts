@@ -149,3 +149,20 @@ export const getXPProgress = (user: User): number => {
 export const canLevelUp = (user: User): boolean => {
   return user.xp >= getNextLevelXP(user.level);
 };
+
+export type LifeCategory = string;
+
+export interface Metric {
+  metricType: string;
+  value: number;
+  unit?: string;
+  notes?: string;
+  date: Date | string;
+}
+
+export interface LevelProgress {
+  level: number;
+  xp: number;
+  dailyStreak: number;
+  totalCompleted: number;
+}

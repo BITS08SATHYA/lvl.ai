@@ -49,7 +49,7 @@ function CreateTaskModal({ isOpen, onClose, initialTags = [], onCreated }: Creat
     try {
       // Create the task via API
       const response = await TaskAPI.createTask(data);
-      
+
       // Parse dates for frontend use
       const createdTask: Task = {
         ...response.data,
@@ -62,31 +62,33 @@ function CreateTaskModal({ isOpen, onClose, initialTags = [], onCreated }: Creat
 
       // Call the onCreated callback
       onCreated(createdTask);
-      
+
       // Close the modal
       onClose();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error creating task:', err);
-      
+
       // Extract error message from various sources
       let errorMessage = 'Failed to create task. Please try again.';
-      
-      if (err.response?.data) {
-        if (typeof err.response.data.message === 'string') {
-          errorMessage = err.response.data.message;
-        } else if (err.response.data.error) {
-          errorMessage = err.response.data.error;
-        } else if (err.response.data.errors) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const errorObj = err as any;
+
+      if (errorObj.response?.data) {
+        if (typeof errorObj.response.data.message === 'string') {
+          errorMessage = errorObj.response.data.message;
+        } else if (errorObj.response.data.error) {
+          errorMessage = errorObj.response.data.error;
+        } else if (errorObj.response.data.errors) {
           // Handle validation errors object
-          const errors = err.response.data.errors;
+          const errors = errorObj.response.data.errors;
           errorMessage = Object.entries(errors)
             .map(([field, msg]) => `${field}: ${msg}`)
             .join(', ');
         }
-      } else if (err.message) {
-        errorMessage = err.message;
+      } else if (errorObj.message) {
+        errorMessage = errorObj.message;
       }
-      
+
       setError(errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -98,7 +100,7 @@ function CreateTaskModal({ isOpen, onClose, initialTags = [], onCreated }: Creat
   }
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
       onClick={handleBackdropClick}
       onKeyDown={handleKeyDown}

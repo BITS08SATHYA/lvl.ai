@@ -1,11 +1,11 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
-import { 
-  ApiResponse, 
-  PaginatedResponse, 
-  User, 
-  BaseTask, 
-  LoginRequest, 
-  RegisterRequest, 
+import {
+  ApiResponse,
+  PaginatedResponse,
+  User,
+  BaseTask,
+  LoginRequest,
+  RegisterRequest,
   AuthResponse,
   TaskFormData,
   TaskFilters,
@@ -190,7 +190,7 @@ class ApiClient {
   async uploadAvatar(userId: string, file: File): Promise<string> {
     const formData = new FormData();
     formData.append('avatar', file);
-    
+
     const response: AxiosResponse<ApiResponse<{ url: string }>> = await this.client.post(
       `/users/${userId}/avatar`,
       formData,
@@ -200,7 +200,7 @@ class ApiClient {
         },
       }
     );
-    
+
     if (response.data.success && response.data.data) {
       return response.data.data.url;
     }
@@ -215,26 +215,34 @@ class ApiClient {
     limit: number = 20
   ): Promise<PaginatedResponse<BaseTask>> {
     const params = new URLSearchParams();
-    
+
     if (filters) {
-      if (filters.status) params.append('status', filters.status.join(','));
-      if (filters.priority) params.append('priority', filters.priority.join(','));
-      if (filters.taskType) params.append('type', filters.taskType.join(','));
-      if (filters.tags) params.append('tag', filters.tags.join(','));
+      if (filters.status) {
+        params.append('status', Array.isArray(filters.status) ? filters.status.join(',') : filters.status);
+      }
+      if (filters.priority) {
+        params.append('priority', Array.isArray(filters.priority) ? filters.priority.join(',') : filters.priority);
+      }
+      if (filters.taskType) {
+        params.append('type', Array.isArray(filters.taskType) ? filters.taskType.join(',') : filters.taskType);
+      }
+      if (filters.tags) {
+        params.append('tag', Array.isArray(filters.tags) ? filters.tags.join(',') : filters.tags);
+      }
     }
-    
+
     if (sort) {
       params.append('sortBy', sort.field);
       params.append('sortOrder', sort.direction);
     }
-    
+
     params.append('page', page.toString());
     params.append('limit', limit.toString());
 
     const response: AxiosResponse<{ success: boolean; count: number; total: number; page: number; pages: number; data: BaseTask[] }> = await this.client.get(
       `/tasks?${params.toString()}`
     );
-    
+
     if (response.data.success) {
       return {
         success: true,
@@ -261,7 +269,17 @@ class ApiClient {
     const params = new URLSearchParams();
     if (period) params.append('period', period.toString());
 
-    const response: AxiosResponse<{ success: boolean; data: any }> = await this.client.get(`/tasks/stats?${params.toString()}`);
+    const response: AxiosResponse<{
+      success: boolean;
+      data: {
+        totalTasks: number;
+        byType: Record<string, number>;
+        byStatus: Record<string, number>;
+        byPriority: Record<string, number>;
+        totalXP: number;
+        overdue: number;
+      };
+    }> = await this.client.get(`/tasks/stats?${params.toString()}`);
     if (response.data.success) {
       return response.data.data;
     }
@@ -299,32 +317,32 @@ class ApiClient {
     }
   }
 
-  async addTaskNote(taskId: string, content: string): Promise<any[]> {
-    const response: AxiosResponse<{ success: boolean; data: any[] }> = await this.client.post(`/tasks/${taskId}/notes`, { content });
+  async addTaskNote(taskId: string, content: string): Promise<unknown[]> {
+    const response: AxiosResponse<{ success: boolean; data: unknown[] }> = await this.client.post(`/tasks/${taskId}/notes`, { content });
     if (response.data.success) {
       return response.data.data;
     }
     throw new Error('Failed to add note');
   }
 
-  async addTaskReminder(taskId: string, date: string, message: string): Promise<any[]> {
-    const response: AxiosResponse<{ success: boolean; data: any[] }> = await this.client.post(`/tasks/${taskId}/reminders`, { date, message });
+  async addTaskReminder(taskId: string, date: string, message: string): Promise<unknown[]> {
+    const response: AxiosResponse<{ success: boolean; data: unknown[] }> = await this.client.post(`/tasks/${taskId}/reminders`, { date, message });
     if (response.data.success) {
       return response.data.data;
     }
     throw new Error('Failed to add reminder');
   }
 
-  async addTaskCollaborator(taskId: string, collaboratorId: string): Promise<any[]> {
-    const response: AxiosResponse<{ success: boolean; data: any[] }> = await this.client.post(`/tasks/${taskId}/collaborators`, { collaboratorId });
+  async addTaskCollaborator(taskId: string, collaboratorId: string): Promise<unknown[]> {
+    const response: AxiosResponse<{ success: boolean; data: unknown[] }> = await this.client.post(`/tasks/${taskId}/collaborators`, { collaboratorId });
     if (response.data.success) {
       return response.data.data;
     }
     throw new Error('Failed to add collaborator');
   }
 
-  async removeTaskCollaborator(taskId: string, collaboratorId: string): Promise<any[]> {
-    const response: AxiosResponse<{ success: boolean; data: any[] }> = await this.client.delete(`/tasks/${taskId}/collaborators/${collaboratorId}`);
+  async removeTaskCollaborator(taskId: string, collaboratorId: string): Promise<unknown[]> {
+    const response: AxiosResponse<{ success: boolean; data: unknown[] }> = await this.client.delete(`/tasks/${taskId}/collaborators/${collaboratorId}`);
     if (response.data.success) {
       return response.data.data;
     }
@@ -339,7 +357,7 @@ class ApiClient {
     const response: AxiosResponse<{ success: boolean; count: number; total: number; page: number; pages: number; data: BaseTask[] }> = await this.client.get(
       `/tasks/type/${type}?${params.toString()}`
     );
-    
+
     if (response.data.success) {
       return {
         success: true,
@@ -500,6 +518,15 @@ class ApiClient {
       return response.data.data;
     }
     throw new Error(response.data.message || 'Failed to fetch analytics');
+  }
+
+  // Leaderboard endpoints
+  async getLeaderboard(): Promise<User[]> {
+    const response: AxiosResponse<{ success: boolean; count: number; data: User[] }> = await this.client.get('/leaderboard');
+    if (response.data.success) {
+      return response.data.data;
+    }
+    throw new Error('Failed to fetch leaderboard');
   }
 
   // Utility methods

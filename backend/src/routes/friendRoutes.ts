@@ -29,6 +29,9 @@ router.post('/request', authenticate, [
 
     // Check if already friends
     const requester = await User.findById(requesterId);
+    if (!requester) {
+      throw new CustomError('User not found', 404);
+    }
     if (requester!.friends.includes(recipientId)) {
       throw new CustomError('Already friends with this user', 400);
     }
@@ -163,6 +166,10 @@ router.get('/', authenticate, async (req: Request, res: Response, next: NextFunc
 
     const user = await User.findById(userId).populate('friends', 'name email avatar');
 
+    if (!user) {
+      throw new CustomError('User not found', 404);
+    }
+
     res.status(200).json({
       success: true,
       count: user!.friends.length,
@@ -182,6 +189,10 @@ router.get('/pending', authenticate, async (req: Request, res: Response, next: N
 
     const user = await User.findById(userId).populate('friendRequests.received', 'name email avatar');
 
+    if (!user) {
+      throw new CustomError('User not found', 404);
+    }
+
     res.status(200).json({
       success: true,
       count: user!.friendRequests.received.length,
@@ -200,6 +211,10 @@ router.get('/sent', authenticate, async (req: Request, res: Response, next: Next
     const userId = (req as any).user['id'];
 
     const user = await User.findById(userId).populate('friendRequests.sent', 'name email avatar');
+
+    if (!user) {
+      throw new CustomError('User not found', 404);
+    }
 
     res.status(200).json({
       success: true,
@@ -287,14 +302,14 @@ router.put('/block/:userId', authenticate, [
 
     // Remove from friend requests if any exist
     await User.findByIdAndUpdate(currentUserId, {
-      $pull: { 
+      $pull: {
         'friendRequests.sent': userId,
         'friendRequests.received': userId
       }
     });
 
     await User.findByIdAndUpdate(userId as any, {
-      $pull: { 
+      $pull: {
         'friendRequests.sent': currentUserId,
         'friendRequests.received': currentUserId
       }

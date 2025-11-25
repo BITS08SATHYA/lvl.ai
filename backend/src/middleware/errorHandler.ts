@@ -27,6 +27,9 @@ export const errorHandler = (
 ): void => {
   let error = { ...err };
   error.message = err.message;
+  if (err.statusCode) {
+    error.statusCode = err.statusCode;
+  }
 
   // Log error
   logger.error(err);

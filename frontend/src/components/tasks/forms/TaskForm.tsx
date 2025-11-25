@@ -23,11 +23,11 @@ interface ValidationErrors {
   points?: string;
 }
 
-export function TaskForm({ 
-  initialTags = [], 
+export function TaskForm({
+  initialTags = [],
   initialData,
-  onSubmit, 
-  onCancel, 
+  onSubmit,
+  onCancel,
   isSubmitting = false,
   isEditing = false
 }: TaskFormProps) {
@@ -46,28 +46,32 @@ export function TaskForm({
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
-  const validateField = (field: keyof CreateTaskDTO, value: any): string | undefined => {
+  const validateField = (field: keyof CreateTaskDTO, value: CreateTaskDTO[keyof CreateTaskDTO] | undefined): string | undefined => {
     switch (field) {
       case 'title':
-        if (!value || !value.trim()) {
+        if (typeof value === 'string') {
+          if (!value || !value.trim()) {
+            return 'Title is required';
+          }
+          if (value.trim().length < 3) {
+            return 'Title must be at least 3 characters';
+          }
+          if (value.trim().length > 200) {
+            return 'Title must be less than 200 characters';
+          }
+        } else if (!value) {
           return 'Title is required';
         }
-        if (value.trim().length < 3) {
-          return 'Title must be at least 3 characters';
-        }
-        if (value.trim().length > 200) {
-          return 'Title must be less than 200 characters';
-        }
         break;
-      
+
       case 'description':
-        if (value && value.length > 1000) {
+        if (typeof value === 'string' && value.length > 1000) {
           return 'Description must be less than 1000 characters';
         }
         break;
-      
+
       case 'points':
-        const points = typeof value === 'string' ? parseInt(value) : value;
+        const points = typeof value === 'string' ? parseInt(value) : (typeof value === 'number' ? value : 0);
         if (isNaN(points)) {
           return 'Points must be a number';
         }
@@ -78,21 +82,21 @@ export function TaskForm({
           return 'Points must be less than 10,000';
         }
         break;
-      
+
       case 'dueDate':
-        if (value && formData.taskTime) {
+        if (typeof value === 'string' && value && formData.taskTime) {
           const dueDate = new Date(value);
-          const taskTime = new Date(formData.taskTime);
+          const taskTime = typeof formData.taskTime === 'string' ? new Date(formData.taskTime) : (formData.taskTime instanceof Date ? formData.taskTime : new Date());
           if (dueDate < taskTime) {
             return 'Due date must be after task time';
           }
         }
         break;
-      
+
       case 'taskTime':
-        if (value && formData.dueDate) {
+        if (typeof value === 'string' && value && formData.dueDate) {
           const taskTime = new Date(value);
-          const dueDate = new Date(formData.dueDate);
+          const dueDate = typeof formData.dueDate === 'string' ? new Date(formData.dueDate) : (formData.dueDate instanceof Date ? formData.dueDate : new Date());
           if (taskTime > dueDate) {
             return 'Task time must be before due date';
           }
@@ -102,14 +106,14 @@ export function TaskForm({
     return undefined;
   };
 
-  const handleChange = (field: keyof CreateTaskDTO, value: any) => {
+  const handleChange = (field: keyof CreateTaskDTO, value: CreateTaskDTO[keyof CreateTaskDTO]) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    
+
     // Clear error for this field when user starts typing
     if (errors[field as keyof ValidationErrors]) {
       setErrors(prev => ({ ...prev, [field]: undefined }));
     }
-    
+
     // Validate if field has been touched
     if (touched[field]) {
       const error = validateField(field, value);
@@ -141,25 +145,25 @@ export function TaskForm({
 
   const validateForm = (): boolean => {
     const newErrors: ValidationErrors = {};
-    
+
     // Validate all fields
     const titleError = validateField('title', formData.title);
     if (titleError) newErrors.title = titleError;
-    
+
     const descError = validateField('description', formData.description);
     if (descError) newErrors.description = descError;
-    
+
     const pointsError = validateField('points', formData.points);
     if (pointsError) newErrors.points = pointsError;
-    
+
     const dueDateError = validateField('dueDate', formData.dueDate);
     if (dueDateError) newErrors.dueDate = dueDateError;
-    
+
     const taskTimeError = validateField('taskTime', formData.taskTime);
     if (taskTimeError) newErrors.taskTime = taskTimeError;
-    
+
     setErrors(newErrors);
-    
+
     // Mark all fields as touched
     setTouched({
       title: true,
@@ -168,13 +172,13 @@ export function TaskForm({
       taskTime: true,
       points: true,
     });
-    
+
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate all fields before submitting
     if (!validateForm()) {
       return;
@@ -351,16 +355,16 @@ export function TaskForm({
             }}
             disabled={isSubmitting}
           />
-          <Button 
-            type="button" 
-            onClick={handleAddTag} 
+          <Button
+            type="button"
+            onClick={handleAddTag}
             variant="outline"
             disabled={isSubmitting || !tagInput.trim()}
           >
             Add
           </Button>
         </div>
-        
+
         {/* Display Tags */}
         {formData.tags && formData.tags.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-2">
@@ -383,7 +387,7 @@ export function TaskForm({
             ))}
           </div>
         )}
-        
+
         <p className="text-xs text-gray-500 mt-2">
           Use tags to categorize your tasks (e.g., work, personal, health, food)
         </p>
@@ -403,8 +407,8 @@ export function TaskForm({
           type="submit"
           disabled={isSubmitting}
         >
-          {isSubmitting 
-            ? (isEditing ? 'Updating...' : 'Creating...') 
+          {isSubmitting
+            ? (isEditing ? 'Updating...' : 'Creating...')
             : (isEditing ? 'Update Task' : 'Create Task')
           }
         </Button>

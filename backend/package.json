@@ -13,7 +13,8 @@
     "lint:fix": "eslint src/**/*.ts --fix",
     "format": "prettier --write src/**/*.ts",
     "type-check": "tsc --noEmit",
-    "fix:user-tasks": "ts-node -r tsconfig-paths/register src/utils/fix-user-tasks.ts"
+    "fix:user-tasks": "ts-node -r tsconfig-paths/register src/utils/fix-user-tasks.ts",
+    "seed": "ts-node -r tsconfig-paths/register src/utils/seed.ts"
   },
   "keywords": [
     "typescript",
